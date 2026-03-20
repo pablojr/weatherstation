@@ -1,18 +1,31 @@
 #include <Arduino.h>
+#include "WindDirection.h"
 
-// put function declarations here:
-int myFunction(int, int);
+// Create the wind direction sensor object
+WindDirection sensorWindDirection;
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+    Serial.begin(115200);
+    
+    Serial.println("Initializing Wind Direction Sensor...");
+    
+    // Try to initialize; stay in loop if magnet isn't found
+    while (!sensorWindDirection.begin()) {
+        Serial.println("Error: Magnet not detected or I2C error. Retrying...");
+        delay(2000);
+    }
+
+    Serial.println("Wind Direction Sensor Ready.");
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+    uint16_t rawValue = sensorWindDirection.readAngle();
+    int degrees = sensorWindDirection.getDegrees();
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+    Serial.print("Raw: ");
+    Serial.print(rawValue);
+    Serial.print(" | Degrees: ");
+    Serial.println(degrees);
+
+    delay(1000); // Read every half second
 }
