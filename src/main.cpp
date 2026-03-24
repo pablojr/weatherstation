@@ -4,9 +4,11 @@
 #include <WebSocketsServer.h>
 #include "WindSpeed.h"
 #include "WindDirection.h"
+#include "Climate.h"
 
-WindSpeed anemometer(4, 60);
+WindSpeed anemometer(4, 60);        // pin GPIO4, 60 mm radius rotating scoops 
 WindDirection compass;
+Climate climate(5);                 // pin GPIO5
 
 WiFiManager wm;
 WebSocketsServer webSocket = WebSocketsServer(81);
@@ -40,6 +42,10 @@ void bindServerCallback() {
     });
 }
 
+void initClimate() {
+    climate.begin();
+}
+
 void initAnemometer() {
     anemometer.begin();
 }
@@ -64,8 +70,10 @@ void setup() {
         return;
     }
 
+    // Sensors Setup
     initCompass();
     initAnemometer();
+    initClimate();
 
     // WiFiManager Setup
     wm.setWebServerCallback(bindServerCallback);
@@ -84,8 +92,13 @@ void loop() {
     // Broadcast sensor data periodically (5 seconds)
     if (millis() - lastUpdate > 5000) {
         // Collect data from sensors
-        float temp = 12.0;
-        float hum  = 88.5;
+        float temp = -100.0;
+        float hum  = -100.0;
+        WeatherData data = climate.getData();
+        if (data.valid) {
+            temp = data.temp;
+            hum = data.hum;
+        }
         float speed = anemometer.getSpeedMS();
         int dir = compass.getDegrees();
 
@@ -96,6 +109,7 @@ void loop() {
         json += "\"speed\":" + String(speed) + ",";
         json += "\"dir\":\"" + String(dir) + "\"";
         json += "}";
+
         // Send the readings to all connected clients
         webSocket.broadcastTXT(json);
 
