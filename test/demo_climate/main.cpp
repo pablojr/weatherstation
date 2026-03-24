@@ -1,7 +1,7 @@
 #include "Climate.h"
 
 // main.cpp doesn't know or care what sensor it's (i.e. DHT11 or DHT22)
-Climate climate(5); 
+Climate climate(5);         // GPIO5
 
 void setup() {
     Serial.begin(115200);
