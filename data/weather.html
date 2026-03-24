@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>BAIOT Weather Station</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body { font-family: Arial; text-align: center; background: #f4f4f4; }
+            .card { background: white; padding: 20px; margin: 10px; border-radius: 10px; display: inline-block; width: 150px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+            .val { font-size: 1.5em; font-weight: bold; color: #2c3e50; }
+        </style>
+    </head>
+    <body>
+        <h1>Live Weather</h1>
+        <div class="card"><div>Temp</div><div class="val" id="t">--</div></div>
+        <div class="card"><div>Humidity</div><div class="val" id="h">--</div></div>
+        <div class="card"><div>Wind Speed</div><div class="val" id="s">--</div></div>
+        <div class="card"><div>Direction</div><div class="val" id="d">--</div></div>
+
+        <script>
+            var ws = new WebSocket('ws://' + window.location.hostname + ':81/');
+            ws.onmessage = function(e) {
+                var data = JSON.parse(e.data);
+                document.getElementById('t').innerHTML = data.temp + "°C";
+                document.getElementById('h').innerHTML = data.hum + "%";
+                document.getElementById('s').innerHTML = data.speed + " m/s";
+                document.getElementById('d').innerHTML = data.dir;
+            };
+        </script>
+    </body>
+</html>
