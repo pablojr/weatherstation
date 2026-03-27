@@ -2,10 +2,16 @@
 #include <LittleFS.h>
 #include <WiFiManager.h>
 #include <WebSocketsServer.h>
+#include "WindSpeed.h"
+#include "WindDirection.h"
+#include "Climate.h"
+
+WindSpeed anemometer(4, 60);        // pin GPIO4, 60 mm radius rotating scoops 
+WindDirection compass;
+Climate climate(5);                 // pin GPIO5
 
 WiFiManager wm;
 WebSocketsServer webSocket = WebSocketsServer(81);
-//const uint16_t UPDATE_INTERVAL = 5000;       // 5 seconds interval to send data updates
 unsigned long lastUpdate = 0;
 
 // Mock sensor function - replace with actual sensor code
@@ -36,6 +42,25 @@ void bindServerCallback() {
     });
 }
 
+void initClimate() {
+    climate.begin();
+}
+
+void initAnemometer() {
+    anemometer.begin();
+}
+
+void initCompass() {
+    Serial.println("Initializing Wind Direction Sensor...");
+    
+    // Try to initialize; stay in loop if magnet isn't found
+    while (!compass.begin()) {
+        Serial.println("Error: Magnet not detected or I2C error. Retrying...");
+        return;
+    }
+    Serial.println("Wind Direction Sensor Ready.");
+}
+
 void setup() {
     Serial.begin(115200);
 
@@ -44,6 +69,11 @@ void setup() {
         Serial.println("LittleFS Mount Failed");
         return;
     }
+
+    // Sensors Setup
+    initCompass();
+    initAnemometer();
+    initClimate();
 
     // WiFiManager Setup
     wm.setWebServerCallback(bindServerCallback);
@@ -55,16 +85,22 @@ void setup() {
 }
 
 void loop() {
-    wm.process();         // Handle WiFiManager tasks
-    webSocket.loop();     // Handle WebSocket tasks
+    wm.process();           // Handle WiFiManager tasks
+    webSocket.loop();       // Handle WebSocket tasks
+    anemometer.update();    // Handle anemometer tasks
 
-    // Broadcast sensor data every 2 seconds
+    // Broadcast sensor data periodically (5 seconds)
     if (millis() - lastUpdate > 5000) {
         // Collect data from sensors
-        float temp = 12.0;
-        float hum  = 88.5;
-        float speed = 2.3;
-        int dir = 123;
+        float temp = -100.0;
+        float hum  = -100.0;
+        WeatherData data = climate.getData();
+        if (data.valid) {
+            temp = data.temp;
+            hum = data.hum;
+        }
+        float speed = anemometer.getSpeedMS();
+        int dir = compass.getDegrees();
 
         // Create JSON payload
         String json = "{";
@@ -73,6 +109,7 @@ void loop() {
         json += "\"speed\":" + String(speed) + ",";
         json += "\"dir\":\"" + String(dir) + "\"";
         json += "}";
+
         // Send the readings to all connected clients
         webSocket.broadcastTXT(json);
 
