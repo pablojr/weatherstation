@@ -4,7 +4,7 @@
 #include <DHT.h>
 
 // --- MAINTENANCE AREA: Change 'DHT11' to 'DHT22' here when you upgrade ---
-#define ACTIVE_SENSOR_TYPE DHT11 
+#define ACTIVE_SENSOR_TYPE DHT22
 
 struct WeatherData {
     float temp;
