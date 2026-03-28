@@ -23,7 +23,7 @@
                 var data = JSON.parse(e.data);
                 document.getElementById('t').innerHTML = data.temp.toFixed(1) + " °C";
                 document.getElementById('h').innerHTML = data.hum.toFixed(0) + " %";
-                document.getElementById('p').innerHTML = data.press.toFixed(1) + " hPa";
+                document.getElementById('p').innerHTML = (data.press / 100).toFixed(1) + " hPa";
                 document.getElementById('s').innerHTML = data.speed.toFixed(1) + " m/s";
                 document.getElementById('d').innerHTML = data.dir;
             };
