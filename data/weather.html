@@ -11,8 +11,9 @@
     </head>
     <body>
         <h1>Live Weather</h1>
-        <div class="card"><div>Temp</div><div class="val" id="t">--</div></div>
+        <div class="card"><div>Temperature</div><div class="val" id="t">--</div></div>
         <div class="card"><div>Humidity</div><div class="val" id="h">--</div></div>
+        <div class="card"><div>Pressure</div><div class="val" id="p">--</div></div>
         <div class="card"><div>Wind Speed</div><div class="val" id="s">--</div></div>
         <div class="card"><div>Direction</div><div class="val" id="d">--</div></div>
 
@@ -20,9 +21,10 @@
             var ws = new WebSocket('ws://' + window.location.hostname + ':81/');
             ws.onmessage = function(e) {
                 var data = JSON.parse(e.data);
-                document.getElementById('t').innerHTML = data.temp + "°C";
-                document.getElementById('h').innerHTML = data.hum + "%";
-                document.getElementById('s').innerHTML = data.speed + " m/s";
+                document.getElementById('t').innerHTML = data.temp.toFixed(1) + " °C";
+                document.getElementById('h').innerHTML = data.hum.toFixed(0) + " %";
+                document.getElementById('p').innerHTML = data.press.toFixed(1) + " hPa";
+                document.getElementById('s').innerHTML = data.speed.toFixed(1) + " m/s";
                 document.getElementById('d').innerHTML = data.dir;
             };
         </script>
